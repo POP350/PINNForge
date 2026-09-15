@@ -6,19 +6,6 @@ PINNsForge uses an LLM to generate complete `AlgorithmSpec` objects, validates t
 
 Built-in problems are provided directly by `third_party/pinnacle`. External generalization problems use the same open registry. The project no longer maintains duplicate handwritten PINNacle PDEs, legacy benchmarks, or legacy adapters; additional sources can be integrated through `register_problem()`.
 
-```mermaid
-flowchart LR
-    A["PDE problem definition"] --> B["Feature extraction"]
-    B --> C["Prior/posterior knowledge retrieval"]
-    C --> D["AgenticVariationOperator generates a complete AlgorithmSpec"]
-    D --> E["Credibility assessment"]
-    E --> F["PyTorch PINN construction"]
-    F --> G["Training and numerical evaluation"]
-    G --> H["Population update and EoH reflection"]
-    H --> D
-    G --> I["Artifact and knowledge feedback"]
-```
-
 ## Project structure
 
 The main code follows the explicit A–I stages under `forge/pipeline/`:
