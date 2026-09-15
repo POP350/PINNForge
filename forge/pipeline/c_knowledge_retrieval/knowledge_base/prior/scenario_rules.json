@@ -1,0 +1,148 @@
+[
+  {
+    "rule_id": "shock_prefers_gpinn_rar",
+    "stable_id": "RULE_SHOCK_RAR_002",
+    "if": {"has_shock": true},
+    "then": {"preferred_algorithm": "gPINN_RAR", "preferred_losses": ["gradient_residual"], "preferred_sampling": ["rar"]},
+    "reason": "Shock-like or steep-gradient problems need local residual refinement and derivative-aware residual diagnostics.",
+    "implementation_status": "executable",
+    "evidence_sources": ["yu_2022_gpinn", "lu_2021_deepxde"]
+  },
+  {
+    "rule_id": "shock_prefers_constraint_first_schedule",
+    "stable_id": "RULE_SHOCK_CONSTRAINT_FIRST_005",
+    "if": {"has_shock": true, "time_dependent": true},
+    "then": {
+      "preferred_schedule": ["constraint_pretrain_then_physics"],
+      "preferred_constraints": ["initial_boundary_blend_output_transform"],
+      "preferred_optimizer": ["adam_lbfgs"]
+    },
+    "reason": "For Burgers-like shocks, early IC/BC stabilization helps prevent the residual loss from fitting an incompatible transient surface.",
+    "implementation_status": "executable_when_schedule_supported",
+    "evidence_sources": ["lagaris_1998_trial_solution", "wang_2021_gradient_pathologies"]
+  },
+  {
+    "rule_id": "shock_sampling_prefers_mixed_residual_and_gradient_indicator",
+    "stable_id": "RULE_SHOCK_MIXED_INDICATOR_006",
+    "if": {"has_shock": true},
+    "then": {
+      "preferred_sampling": ["rar", "mixed_uniform_residual_sampling"],
+      "candidate_indicators": ["absolute_residual", "gradient_residual", "solution_gradient_magnitude"],
+      "avoid": ["pure_exploitation_without_uniform_refresh"]
+    },
+    "reason": "Residual-only exploitation can over-concentrate samples; a mixed exploration/refinement sampler is safer for localized Burgers errors.",
+    "implementation_status": "executable_for_existing_rar_components_with_uniform_refresh",
+    "evidence_sources": ["lu_2021_deepxde", "nabian_2021_adaptive_collocation"]
+  },
+  {
+    "rule_id": "multiscale_prefers_fourier",
+    "stable_id": "RULE_MULTISCALE_FOURIER_003",
+    "if": {"has_multiscale": true},
+    "then": {"preferred_network": ["fourier_mlp"], "preferred_initialization": ["xavier"]},
+    "reason": "Fourier features can reduce spectral bias in high-frequency or multi-scale solutions.",
+    "implementation_status": "executable_if_fourier_mlp_enabled",
+    "evidence_sources": ["tancik_2020_fourier_features", "wang_2022_ntk_pinn"]
+  },
+  {
+    "rule_id": "high_frequency_candidate_siren",
+    "stable_id": "RULE_MULTISCALE_SIREN_007",
+    "if": {"has_multiscale": true},
+    "then": {
+      "candidate_network": ["siren"],
+      "required_runtime_component_status": ["llm_candidate_until_registered"],
+      "required_tests": ["activation_derivative_smoke", "pde_residual_autodiff_smoke"]
+    },
+    "reason": "Sinusoidal networks may represent high-frequency signals well, but are not executable until a safe builder component exists.",
+    "implementation_status": "llm_candidate",
+    "evidence_sources": ["sitzmann_2020_siren"]
+  },
+  {
+    "rule_id": "periodic_prefers_periodic_constraint",
+    "stable_id": "RULE_PERIODIC_CONSTRAINT_004",
+    "if": {"has_periodicity": true},
+    "then": {"preferred_losses": ["periodic_loss"], "preferred_constraints": ["periodic_constraint"]},
+    "reason": "Periodic domains should explicitly match boundary values and, when required by the PDE, boundary derivatives.",
+    "implementation_status": "executable_when_periodic_loss_supported",
+    "evidence_sources": ["raissi_2019_pinn_jcp"]
+  },
+  {
+    "rule_id": "inverse_problem_prefers_joint_physics_data_balance",
+    "stable_id": "RULE_INVERSE_PARAMETER_ID_001",
+    "if": {"has_unknown_parameters": true},
+    "then": {
+      "preferred_losses": ["pde_residual", "data_loss", "parameter_regularization"],
+      "preferred_diagnostics": ["parameter_error", "data_fit_error"],
+      "candidate_extensions": ["bayesian_pinn", "ensemble_pinn"]
+    },
+    "reason": "Inverse problems need data anchors and parameter diagnostics; uncertainty-aware extensions remain non-default unless implemented safely.",
+    "implementation_status": "audit_or_executable_if_inverse_problem_enabled",
+    "evidence_sources": ["raissi_2019_pinn_jcp", "yang_2021_bayesian_pinn"]
+  },
+  {
+    "rule_id": "large_domain_prefers_domain_decomposition_candidate",
+    "stable_id": "RULE_DOMAIN_DECOMPOSITION_008",
+    "if": {"has_multiscale": true},
+    "then": {
+      "candidate_methods": ["XPINN", "cPINN"],
+      "required_runtime_component_status": ["llm_candidate_until_domain_builder_exists"],
+      "required_checks": ["interface_condition_validation", "subdomain_budget_accounting"]
+    },
+    "reason": "Domain decomposition is a useful PINN design idea for heterogeneous or large domains, but it is not part of the current executable core.",
+    "implementation_status": "composite_only",
+    "evidence_sources": ["jagtap_2020_xpinn", "jagtap_2020_cpinn"]
+  },
+  {
+    "rule_id": "burgers_shock_prefers_viscosity_aware_sampling",
+    "stable_id": "RULE_BURGERS_VISCOSITY_SAMPLING_009",
+    "if": {"has_shock": true, "has_conservation_law": true},
+    "then": {
+      "preferred_sampling": ["mixed_uniform_residual_sampling", "rar_with_bc_ic_anchor", "residual_based_adaptive_refinement"],
+      "candidate_indicators": ["absolute_residual", "solution_gradient_magnitude", "gradient_residual"],
+      "preferred_diagnostics": ["shock_region_l2_error", "pde_residual_error", "boundary_error", "initial_error"]
+    },
+    "reason": "Burgers shock regions concentrate error near steep gradients; sampling should combine residual exploitation with uniform refresh and IC/BC anchors.",
+    "implementation_status": "executable_for_existing_sampling_components",
+    "evidence_sources": ["raissi_2019_pinn_jcp", "wu_2023_sampling_study", "lu_2021_deepxde"]
+  },
+  {
+    "rule_id": "burgers_transform_prefers_initial_boundary_blend",
+    "stable_id": "RULE_BURGERS_TRANSFORM_BLEND_010",
+    "if": {"has_shock": true, "time_dependent": true, "boundary_type_not_empty": true},
+    "then": {
+      "preferred_constraints": ["initial_boundary_blend_output_transform"],
+      "preferred_schedule": ["constraint_pretrain_then_physics"],
+      "required_checks": ["ic_exactness", "bc_exactness_or_low_error", "transform_does_not_break_reference_solution_scale"]
+    },
+    "reason": "For the current Burgers 1D benchmark, IC/BC transforms are a high-priority prior because they remove easy constraint error from the harder shock residual fit.",
+    "implementation_status": "executable_when_existing_burgers_transform_components_are_used",
+    "evidence_sources": ["lagaris_1998_trial_solution", "lu_2021_hpinn", "sukumar_2022_exact_bc_distance_functions"]
+  },
+  {
+    "rule_id": "burgers_gpinn_weight_should_start_conservative",
+    "stable_id": "RULE_BURGERS_GPINN_WEIGHT_011",
+    "if": {"has_shock": true},
+    "then": {
+      "preferred_losses": ["gradient_residual"],
+      "preferred_weight_range_hint": {"gradient_residual": [0.01, 0.2]},
+      "preferred_schedule": ["small_gradient_residual_weight_initially", "adaptive_weighting_optional"],
+      "avoid": ["large_gradient_residual_weight_without_loss_diagnostics"]
+    },
+    "reason": "gPINN terms can reveal derivative error around shocks but add autodiff cost and can dominate the residual if overweighted.",
+    "implementation_status": "executable",
+    "evidence_sources": ["yu_2022_gpinn", "wang_2021_gradient_pathologies"]
+  },
+  {
+    "rule_id": "burgers_cnn_is_candidate_for_grid_rollout_not_default_coordinate_pinn",
+    "stable_id": "RULE_BURGERS_CNN_CANDIDATE_012",
+    "if": {"has_shock": true, "time_dependent": true},
+    "then": {
+      "candidate_networks": ["fPICNN_SpaceTime_PINN", "CNN_PINN_Grid_Prior"],
+      "required_data_or_adapter": ["space_time_grid", "grid_residual_adapter", "boundary_mask_policy"],
+      "execution_boundary": ["llm_candidate_until_safe_cnn_builder_exists"],
+      "fallback_executable_networks": ["mlp", "fourier_mlp"]
+    },
+    "reason": "CNN-PINN ideas are relevant to Burgers on structured space-time grids, but the current executable Burgers core is coordinate-based.",
+    "implementation_status": "llm_candidate",
+    "evidence_sources": ["yuan_2024_fpicnn", "gao_2021_phygeonet"]
+  }
+]

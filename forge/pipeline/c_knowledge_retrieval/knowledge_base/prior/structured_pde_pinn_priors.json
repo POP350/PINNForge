@@ -1,0 +1,118 @@
+{
+  "schema_version": "1.1",
+  "purpose": "Machine-readable PINNacle-aligned benchmark contracts and non-binding PDE-PINN guidance.",
+  "claim_boundary": {
+    "sota_claim_supported": false,
+    "general_superiority_supported": false,
+    "prior_knowledge_is_binding": false,
+    "requires_matched_equation_reference_budget_seeds_and_metric": true
+  },
+  "families": [
+    {
+      "family_id": "classic_viscous_burgers_1d",
+      "rule_id": "pinnacle_burgers1d_benchmark_contract",
+      "stable_id": "PINNACLE_BURGERS1D_CONTRACT_001",
+      "applies_when": {
+        "benchmark_id": "burgers_1d",
+        "has_manufactured_source": false
+      },
+      "benchmark_ids": ["burgers_1d"],
+      "pde_tags": ["nonlinear_convection_diffusion", "time_dependent", "steep_gradient", "conservation_law"],
+      "reason": "PINNacle benchmark identity must be fixed before architecture or optimizer knowledge is transferred.",
+      "evidence_sources": ["pinnacle_2024_neurips", "pinnacle_official_burgers1d_code"],
+      "trusted_equation": "u_t + u * u_x - nu * u_xx = 0, nu = 0.01/pi",
+      "benchmark_contract": {
+        "domain": {"x": [-1.0, 1.0], "t": [0.0, 1.0]},
+        "initial_condition": "u(x, 0) = -sin(pi*x)",
+        "boundary_conditions": ["u(-1, t) = 0", "u(1, t) = 0"],
+        "source_term": null,
+        "official_reference": "PINNacle ref/burgers1d.dat (COMSOL grid)",
+        "local_reference": "official PINNacle reference loaded directly",
+        "equation_alignment": "exact",
+        "reference_alignment": "official_pinnacle_reference",
+        "direct_performance_comparison_allowed": false
+      },
+      "reference_metrics": [
+        {
+          "source_id": "pinnsagent_2025_icml",
+          "metric": "mse",
+          "value": 0.0000651,
+          "std": 0.0000163,
+          "runs": 10,
+          "protocol_note": "PINNsAgent Table 2; external reference only."
+        },
+        {
+          "source_id": "pinnsagent_2025_icml",
+          "reported_origin": "PINNacle best benchmark result reproduced in PINNsAgent Table 2",
+          "metric": "mse",
+          "value": 0.000079,
+          "protocol_note": "External reference only; do not compare until official reference data and matched protocol are used."
+        }
+      ],
+      "recommended_evaluator_metrics": [
+        "relative_l2_error",
+        "mse",
+        "relative_linf_error",
+        "shock_region_relative_l2_error",
+        "shock_region_mse",
+        "pde_residual_error",
+        "boundary_error",
+        "initial_error",
+        "nan_detected_rate",
+        "training_success_rate",
+        "paired_seed_win_loss"
+      ],
+      "training_protocol": {
+        "pinnacle_default_iterations": 20000,
+        "project_minimum_training_steps_per_model": 5000,
+        "budget_rule": "Never present a run below 5000 actual optimizer steps as a completed model training run.",
+        "report_separately": ["configured_adam_epochs", "configured_lbfgs_iter", "actual_training_steps"],
+        "seed_policy": "Use repeated seeds for claims; a single seed is diagnostic only."
+      },
+      "executable_prior_components": [
+        "mlp",
+        "tanh_activation",
+        "swish_activation",
+        "gaussian_activation",
+        "glorot_uniform_initialization",
+        "glorot_normal_initialization",
+        "adam_lbfgs",
+        "rar",
+        "residual_based_adaptive",
+        "mixed_residual_shock",
+        "initial_boundary_blend"
+      ],
+      "candidate_only_components": [
+        "gaaf_network",
+        "laaf_network",
+        "cnn_pinn_grid_prior",
+        "causal_time_weighting"
+      ],
+      "engineering_notes": [
+        "Treat MSE and relative L2 error as different metrics; never compare their numeric values as if interchangeable.",
+        "Do not treat low boundary or initial error as sufficient; require solution error and steep-gradient-region error.",
+        "Do not claim superiority over PINNacle or PINNsAgent unless equation, official reference, training budget, seeds and metric protocol all match."
+      ],
+      "implementation_status": "implemented"
+    },
+    {
+      "family_id": "pinnacle_burgers1d_search_guidance",
+      "rule_id": "pinnacle_burgers1d_search_guidance",
+      "stable_id": "PINNACLE_BURGERS1D_SEARCH_002",
+      "applies_when": {
+        "benchmark_id": "burgers_1d",
+        "has_manufactured_source": false
+      },
+      "reason": "Use PINNacle methods as comparison anchors while retaining open-ended, safety-checked evolutionary search.",
+      "evidence_sources": ["pinnacle_2024_neurips", "pinnsagent_2025_icml"],
+      "then": {
+        "comparison_anchors": ["PINN", "PINN-LRA", "PINN-NTK", "RAR", "MultiAdam", "gPINN", "hp-VPINN", "LAAF", "GAAF", "FBPINN"],
+        "initial_population_policy": "Include a vanilla PINN control, executable adaptive-sampling/loss variants, and diverse safe architectures; preserve random exploration early.",
+        "late_search_policy": "Increase elite crossover and posterior-knowledge mutation only after sufficient evaluated evidence; keep novelty injection and restart paths to escape local optima.",
+        "safety_policy": "Only registered and validated runtime components may execute; candidate-only methods remain proposals until builder and safety tests pass.",
+        "metric_policy": "Rank by the project's composite score, but always retain raw MSE, relative L2, residual, constraint, stability and cost metrics."
+      },
+      "implementation_status": "implemented"
+    }
+  ]
+}

@@ -1,0 +1,147 @@
+[
+  {
+    "rule_id": "time_dependent_requires_initial_loss",
+    "stable_id": "PHYSICS_RULE_INITIAL_001",
+    "if": {"time_dependent": true},
+    "then": {"required_losses": ["initial_loss"]},
+    "reason": "Time-dependent PDEs require initial-condition supervision.",
+    "implementation_status": "executable",
+    "evidence_sources": ["raissi_2019_pinn_jcp"]
+  },
+  {
+    "rule_id": "boundary_requires_boundary_loss",
+    "stable_id": "PHYSICS_RULE_BOUNDARY_002",
+    "if": {"boundary_type_not_empty": true},
+    "then": {"required_losses": ["boundary_loss"]},
+    "reason": "Boundary value problems require boundary-condition enforcement.",
+    "implementation_status": "executable",
+    "evidence_sources": ["raissi_2019_pinn_jcp", "lagaris_1998_trial_solution"]
+  },
+  {
+    "rule_id": "conservation_prefers_constraint",
+    "stable_id": "PHYSICS_PRIOR_CONSERVATION_003",
+    "if": {"has_conservation_law": true},
+    "then": {"preferred_losses": ["conservation_loss"], "preferred_constraints": ["conservation_constraint"]},
+    "reason": "Conservation-law PDEs benefit from explicit conservation priors when the benchmark exposes compatible residual terms.",
+    "implementation_status": "executable_when_loss_supported",
+    "evidence_sources": ["jagtap_2020_cpinn", "lu_2021_physics_informed_ml_review"]
+  },
+  {
+    "rule_id": "hard_ic_bc_transform_preferred_when_available",
+    "stable_id": "PHYSICS_RULE_HARD_CONSTRAINT_004",
+    "if": {"time_dependent": true, "boundary_type_not_empty": true},
+    "then": {
+      "preferred_constraints": ["initial_boundary_output_transform", "initial_anchor", "boundary_anchor"],
+      "fallback_losses": ["initial_loss", "boundary_loss"],
+      "required_checks": ["transform_satisfies_ic_bc", "no_transform_execution_from_llm"]
+    },
+    "reason": "Trial-solution or output-transform constraints can reduce IC/BC violation, but must be implemented as direct runtime components.",
+    "implementation_status": "executable_when_builder_supports_transform",
+    "evidence_sources": ["lagaris_1998_trial_solution", "raissi_2019_pinn_jcp"]
+  },
+  {
+    "rule_id": "loss_imbalance_prefers_adaptive_weighting",
+    "stable_id": "PHYSICS_RULE_LOSS_BALANCE_005",
+    "if": {"law_types": ["pde"]},
+    "then": {
+      "preferred_losses": ["adaptive_loss_weighting"],
+      "preferred_diagnostics": ["loss_term_history", "gradient_norm_history"],
+      "fallback_schedule": ["constraint_pretrain_then_physics"]
+    },
+    "reason": "PINN training can fail when PDE, boundary, and initial losses have incompatible gradient scales.",
+    "implementation_status": "compiled_to_existing_components_when_available",
+    "evidence_sources": ["wang_2021_gradient_pathologies", "wang_2022_ntk_pinn"]
+  },
+  {
+    "rule_id": "adaptive_sampling_must_preserve_constraint_anchors",
+    "stable_id": "PHYSICS_RULE_RAR_ANCHORS_006",
+    "if": {"has_shock": true, "boundary_type_not_empty": true},
+    "then": {
+      "preferred_sampling": ["rar_with_bc_ic_anchor", "mixed_uniform_residual_sampling"],
+      "required_sampling": ["boundary_initial_anchor_points"],
+      "avoid": ["rar_only_interior_points"]
+    },
+    "reason": "Residual-adaptive sampling should target localized PDE error without starving boundary and initial constraints.",
+    "implementation_status": "executable",
+    "evidence_sources": ["lu_2021_deepxde", "nabian_2021_adaptive_collocation"]
+  },
+  {
+    "rule_id": "inverse_problem_parameter_identification_requires_data_anchor",
+    "stable_id": "PHYSICS_RULE_INVERSE_DATA_007",
+    "if": {"has_unknown_parameters": true},
+    "then": {
+      "required_losses": ["data_loss", "pde_residual"],
+      "preferred_diagnostics": ["identified_parameter_error", "parameter_bounds"],
+      "preferred_regularization": ["parameter_prior_or_box_constraint"]
+    },
+    "reason": "Inverse PDE identification needs observation anchors in addition to residual constraints.",
+    "implementation_status": "audit_or_executable_if_inverse_problem_enabled",
+    "evidence_sources": ["raissi_2019_pinn_jcp", "yang_2021_bayesian_pinn"]
+  },
+  {
+    "rule_id": "sparse_data_prefers_uncertainty_or_robust_regularization",
+    "stable_id": "PHYSICS_RULE_SPARSE_DATA_008",
+    "if": {"data_available": true},
+    "then": {
+      "preferred_losses": ["data_loss", "robust_data_loss"],
+      "preferred_diagnostics": ["data_fit_error", "physics_data_tradeoff"],
+      "candidate_extensions": ["bayesian_pinn", "ensemble_uncertainty"]
+    },
+    "reason": "When data are sparse or noisy, physics and data terms should be balanced and uncertainty-aware methods can be considered as non-default extensions.",
+    "implementation_status": "audit_only_until_uncertainty_components_are_safe",
+    "evidence_sources": ["yang_2021_bayesian_pinn", "lu_2021_physics_informed_ml_review"]
+  },
+  {
+    "rule_id": "burgers_transform_must_preserve_ic_bc_and_pde_residual",
+    "stable_id": "PHYSICS_RULE_BURGERS_TRANSFORM_009",
+    "if": {"has_shock": true, "time_dependent": true, "has_conservation_law": true},
+    "then": {
+      "preferred_constraints": ["initial_boundary_blend_output_transform"],
+      "required_checks": ["initial_condition_exactness", "boundary_condition_exactness_or_semihard_error", "residual_after_transform"],
+      "preferred_losses": ["pde_residual", "gradient_residual"],
+      "avoid": ["transform_that_masks_shock_region_residual"]
+    },
+    "reason": "For viscous Burgers, an output transform should enforce IC/BC without hiding the nonlinear convection-diffusion residual near steep gradients.",
+    "implementation_status": "executable_when_existing_burgers_transform_components_are_used",
+    "evidence_sources": ["raissi_2019_pinn_jcp", "lu_2021_hpinn", "sukumar_2022_exact_bc_distance_functions"]
+  },
+  {
+    "rule_id": "distance_function_transform_requires_geometry_validation",
+    "stable_id": "PHYSICS_RULE_DISTANCE_TRANSFORM_010",
+    "if": {"boundary_type_not_empty": true},
+    "then": {
+      "candidate_constraints": ["distance_function_boundary_factor", "signed_distance_output_transform"],
+      "required_checks": ["distance_zero_on_boundary", "positive_inside_domain", "differentiability_for_autodiff"],
+      "execution_boundary": ["llm_candidate_until_geometry_tests_pass"]
+    },
+    "reason": "Distance-function hard boundary transforms are useful priors, but they require geometry-specific validation before direct runtime execution.",
+    "implementation_status": "llm_candidate",
+    "evidence_sources": ["sukumar_2022_exact_bc_distance_functions", "lu_2021_hpinn"]
+  },
+  {
+    "rule_id": "time_dependent_shock_prefers_causal_or_windowed_schedule",
+    "stable_id": "PHYSICS_RULE_CAUSAL_TIME_011",
+    "if": {"has_shock": true, "time_dependent": true},
+    "then": {
+      "candidate_schedule": ["causal_time_weighting", "time_window_curriculum"],
+      "preferred_diagnostics": ["time_slice_residual_history", "early_time_ic_error", "late_time_error"],
+      "fallback_schedule": ["constraint_pretrain_then_physics"]
+    },
+    "reason": "Time-dependent PINNs can propagate early-time errors; causal or windowed training is a useful Burgers prior but needs builder support.",
+    "implementation_status": "llm_candidate",
+    "evidence_sources": ["wang_2024_causal_pinn", "wang_2022_ntk_pinn"]
+  },
+  {
+    "rule_id": "cnn_pinn_requires_grid_residual_adapter",
+    "stable_id": "PHYSICS_RULE_CNN_GRID_ADAPTER_012",
+    "if": {"law_types": ["pde"]},
+    "then": {
+      "candidate_networks": ["cnn_encoder_decoder", "fully_convolutional_spacetime_network"],
+      "required_adapters": ["grid_tensor_sampler", "finite_difference_or_grid_autodiff_residual", "boundary_mask_or_padding_policy"],
+      "execution_boundary": ["llm_candidate_until_safe_cnn_builder_exists"]
+    },
+    "reason": "CNN-PINN methods are promising for grid-like PDE states, but coordinate PINN residual code cannot execute them without a grid residual adapter.",
+    "implementation_status": "llm_candidate",
+    "evidence_sources": ["gao_2021_phygeonet", "yuan_2024_fpicnn"]
+  }
+]

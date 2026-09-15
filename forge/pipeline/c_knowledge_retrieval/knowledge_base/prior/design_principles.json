@@ -1,0 +1,161 @@
+{
+  "schema_version": "1.0",
+  "macro_physics_principles": [
+    {
+      "principle_id": "physics_preserve_problem_contract",
+      "applies_when": {},
+      "principle": "Treat the governing equation, physical parameters, domain, initial/boundary conditions, and evaluation contract as immutable.",
+      "design_implications": ["Change only AlgorithmSpec-controlled representation, sampling, loss, constraints, and optimization choices.", "Never compensate for optimization difficulty by changing the PDE."],
+      "evidence_sources": ["raissi_2019_pinn_jcp", "lu_2021_physics_informed_ml_review"]
+    },
+    {
+      "principle_id": "physics_constraint_consistency",
+      "applies_when": {},
+      "principle": "The learned field must satisfy governing residuals and all available initial, boundary, algebraic, integral, or observational constraints as one coupled physical system.",
+      "design_implications": ["Allocate loss and samples to every required constraint type.", "Diagnose tradeoffs instead of silently dropping difficult constraints."],
+      "evidence_sources": ["raissi_2019_pinn_jcp", "lagaris_1998_trial_solution"]
+    },
+    {
+      "principle_id": "physics_conservation_structure",
+      "applies_when": {"has_conservation_law": true},
+      "principle": "Respect global and local conservation structure, including flux balance and interface consistency where applicable.",
+      "design_implications": ["Prefer conservative residual or constraint choices supported by the registry.", "Monitor conservation error separately from pointwise fit."],
+      "evidence_sources": ["jagtap_2020_cpinn", "lu_2021_physics_informed_ml_review"]
+    },
+    {
+      "principle_id": "physics_causality_and_initial_value_flow",
+      "applies_when": {"time_dependent": true},
+      "principle": "Information in time-dependent initial-value problems propagates forward from the initial state; later-time residual reduction must not destroy earlier-time consistency.",
+      "design_implications": ["Preserve initial-condition supervision.", "Consider causal or curriculum-style training when supported and justified."],
+      "evidence_sources": ["wang_2024_causal_pinn", "raissi_2019_pinn_jcp"]
+    },
+    {
+      "principle_id": "physics_localize_shocks_and_steep_gradients",
+      "applies_when": {"has_shock": true},
+      "principle": "Shocks and steep gradients concentrate approximation and residual error in localized regions.",
+      "design_implications": ["Use representation and sampling choices that can resolve localized high gradients.", "Retain anchors outside the shock region to avoid global accuracy collapse."],
+      "evidence_sources": ["yu_2022_gpinn", "wu_2023_sampling_study"]
+    },
+    {
+      "principle_id": "physics_resolve_multiscale_content",
+      "applies_when": {"has_multiscale": true},
+      "principle": "Distinct physical scales require the representation, sampling density, and optimization dynamics to resolve both low- and high-frequency content.",
+      "design_implications": ["Match input representation and capacity to the observed scale range.", "Avoid improving one scale while leaving another unresolved."],
+      "evidence_sources": ["tancik_2020_fourier_features", "wang_2022_ntk_pinn"]
+    },
+    {
+      "principle_id": "physics_dimensional_scaling_and_nondimensionalization",
+      "applies_when": {},
+      "principle": "Large disparities in physical units and characteristic scales should be controlled without changing the underlying dimensional problem contract.",
+      "design_implications": ["Use supported input/output scaling or nondimensional representations when justified by known characteristic scales.", "Keep the mapping back to the original physical variables explicit and preserve all physical parameters."],
+      "evidence_sources": ["lu_2021_physics_informed_ml_review", "wang_2021_gradient_pathologies"]
+    },
+    {
+      "principle_id": "physics_well_posedness_and_constraint_completeness",
+      "applies_when": {},
+      "principle": "A candidate should respect the equation, domain, and complete set of conditions required to define a physically well-posed problem.",
+      "design_implications": ["Check that every required initial, boundary, interface, data, or auxiliary constraint is represented.", "Do not interpret a low residual on an under-constrained problem as a valid physical solution."],
+      "evidence_sources": ["raissi_2019_pinn_jcp", "krishnapriyan_2021_pinn_failure_modes"]
+    },
+    {
+      "principle_id": "physics_symmetry_and_invariance",
+      "applies_when": {"has_symmetry": true},
+      "principle": "Known physical symmetries and invariances should be preserved by the representation or enforced constraints whenever supported.",
+      "design_implications": ["Avoid architectures or transforms that introduce an unjustified preferred direction or origin.", "Use symmetry-aware features or constraints only when they are part of the registered problem contract."],
+      "evidence_sources": ["lu_2021_physics_informed_ml_review", "project_claim_policy"]
+    },
+    {
+      "principle_id": "physics_entropy_and_admissibility_for_shocks",
+      "applies_when": {"has_shock": true},
+      "principle": "For nonlinear conservation laws, a small pointwise residual is not sufficient if the approximation converges to a physically inadmissible weak solution.",
+      "design_implications": ["Track physically relevant shock or flux behavior in addition to residual magnitude.", "Prefer supported conservative or entropy-consistent guidance when available, without inventing new PDE terms."],
+      "evidence_sources": ["jagtap_2020_cpinn", "lu_2021_physics_informed_ml_review"]
+    },
+    {
+      "principle_id": "physics_positivity_and_physical_bounds",
+      "applies_when": {"has_inequality_constraints": true},
+      "principle": "State variables and inferred parameters must remain inside known physical bounds such as positivity, probability, density, concentration, or admissible parameter intervals.",
+      "design_implications": ["Use registered hard constraints, output transforms, or penalty terms appropriate to the stated bounds.", "Report bound violations separately rather than hiding them inside aggregate error."],
+      "evidence_sources": ["lu_2021_hpinn", "sukumar_2022_exact_bc_distance_functions"]
+    },
+    {
+      "principle_id": "physics_stiffness_and_scale_separation",
+      "applies_when": {"is_stiff": true},
+      "principle": "Stiff physical systems contain strongly separated rates that can make residual gradients and optimization dynamics highly imbalanced.",
+      "design_implications": ["Use scaling, staged optimization, adaptive weighting, or curricula supported by the registry.", "Do not remove fast dynamics merely to make the loss easier to optimize."],
+      "evidence_sources": ["krishnapriyan_2021_pinn_failure_modes", "wang_2021_gradient_pathologies"]
+    },
+    {
+      "principle_id": "physics_constitutive_relation_consistency",
+      "applies_when": {"has_constitutive_relation": true},
+      "principle": "Constitutive relations must remain compatible with conservation laws, state variables, and material parameters across the modeled domain.",
+      "design_implications": ["Represent constitutive and governing residuals as coupled constraints.", "Avoid fitting a constitutive relation accurately while violating the associated balance law."],
+      "evidence_sources": ["lu_2021_physics_informed_ml_review", "raissi_2019_pinn_jcp"]
+    },
+    {
+      "principle_id": "physics_inverse_identifiability",
+      "applies_when": {"has_unknown_parameters": true},
+      "principle": "Unknown physical parameters are recoverable only when observations, governing equations, and parameterization provide sufficient identifiability.",
+      "design_implications": ["Balance data and physics evidence and monitor parameter uncertainty or non-uniqueness.", "Do not treat low state error as proof that inferred parameters are correct."],
+      "evidence_sources": ["yang_2021_bayesian_pinn", "raissi_2019_pinn_jcp"]
+    },
+    {
+      "principle_id": "physics_integral_and_global_balance",
+      "applies_when": {"has_integral_constraints": true},
+      "principle": "Integral constraints encode global physical balances that may not be guaranteed by small local residuals alone.",
+      "design_implications": ["Evaluate local residuals and global integral errors together.", "Allocate explicit loss or constraint support to registered integral quantities."],
+      "evidence_sources": ["jagtap_2020_cpinn", "lu_2021_physics_informed_ml_review"]
+    },
+    {
+      "principle_id": "physics_periodic_topology_consistency",
+      "applies_when": {"has_periodicity": true},
+      "principle": "Periodic domains identify opposite boundaries and require both field values and relevant derivatives or fluxes to remain topologically consistent.",
+      "design_implications": ["Use registered periodic constraints or periodic-compatible representations.", "Avoid treating identified periodic boundaries as unrelated Dirichlet boundaries."],
+      "evidence_sources": ["raissi_2019_pinn_jcp", "tancik_2020_fourier_features"]
+    }
+  ],
+  "architecture_design_principles": [
+    {
+      "principle_id": "architecture_derivative_compatible_representation",
+      "applies_when": {},
+      "principle": "PINN architectures must provide stable, sufficiently smooth derivatives at the order required by the PDE.",
+      "design_implications": ["Choose activations and transforms compatible with automatic differentiation.", "Treat high-order derivative conditioning as an architecture criterion, not only a loss issue."],
+      "evidence_sources": ["raissi_2019_pinn_jcp", "sitzmann_2020_siren"]
+    },
+    {
+      "principle_id": "architecture_match_representation_to_physical_spectrum",
+      "applies_when": {"has_multiscale": true},
+      "principle": "Input representation and network architecture should match the physical frequency and scale content of the solution.",
+      "design_implications": ["Consider supported Fourier or multiscale representations.", "Control frequency scale parameters to avoid aliasing or unstable derivatives."],
+      "evidence_sources": ["tancik_2020_fourier_features", "sitzmann_2020_siren"]
+    },
+    {
+      "principle_id": "architecture_capacity_conditioning_budget_balance",
+      "applies_when": {},
+      "principle": "Network capacity must be large enough for the physical solution but small and conditioned enough to train within the parameter and iteration budgets.",
+      "design_implications": ["Justify depth and width using problem complexity.", "Prefer residual, gated, or factorized structures only when their conditioning benefit offsets cost."],
+      "evidence_sources": ["wang_2021_gradient_pathologies", "krishnapriyan_2021_pinn_failure_modes"]
+    },
+    {
+      "principle_id": "architecture_joint_system_design",
+      "applies_when": {},
+      "principle": "Architecture, sampling, loss weighting, constraints, and optimizer form one coupled training system and should not be designed independently.",
+      "design_implications": ["Explain cross-module compatibility in the design hypothesis.", "Use posterior evidence to avoid repeating unstable module combinations."],
+      "evidence_sources": ["wang_2021_gradient_pathologies", "wang_2022_ntk_pinn", "wu_2023_sampling_study"]
+    },
+    {
+      "principle_id": "architecture_preserve_gradient_flow",
+      "applies_when": {},
+      "principle": "The architecture and optimization schedule should preserve useful gradient flow across network depth and competing physical losses.",
+      "design_implications": ["Use supported residual/gating mechanisms or normalization choices only when compatible with PDE derivatives.", "Pair architecture changes with learning-rate and loss-balancing choices."],
+      "evidence_sources": ["wang_2021_gradient_pathologies", "wang_2022_ntk_pinn"]
+    },
+    {
+      "principle_id": "architecture_evidence_bound_complexity",
+      "applies_when": {},
+      "principle": "Add architectural complexity only when a physical feature or measured posterior failure provides a concrete reason.",
+      "design_implications": ["State the evidence and expected metric benefit for each major module.", "Record remaining numerical and computational risks."],
+      "evidence_sources": ["krishnapriyan_2021_pinn_failure_modes", "project_claim_policy"]
+    }
+  ]
+}

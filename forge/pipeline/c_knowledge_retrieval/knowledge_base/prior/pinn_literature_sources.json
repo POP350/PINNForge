@@ -1,0 +1,280 @@
+{
+  "version": "2026-07-13",
+  "purpose": "Traceable literature and project-policy sources for non-binding PINN prior knowledge. These sources guide AlgorithmSpec proposal generation and audit only; they do not execute code and do not establish performance claims.",
+  "sources": [
+    {
+      "source_id": "pinnacle_2024_neurips",
+      "title": "PINNacle: A Comprehensive Benchmark of Physics-Informed Neural Networks for Solving PDEs",
+      "authors": ["Zhongkai Hao", "Jiachen Yao", "Chang Su", "Hang Su", "Ziao Wang", "Fanzhi Lu", "Zeyu Xia", "Yichi Zhang", "Songming Liu", "Lu Lu", "Jun Zhu"],
+      "venue": "NeurIPS Datasets and Benchmarks Track",
+      "year": 2024,
+      "doi": "10.52202/079017-2442",
+      "url": "https://proceedings.neurips.cc/paper_files/paper/2024/hash/8c63299fb2820ef41cb05e2ff11836f5-Abstract-Datasets_and_Benchmarks_Track.html",
+      "knowledge_topics": ["pinn_benchmark", "burgers1d", "standardized_evaluation", "training_budget", "baseline_methods"]
+    },
+    {
+      "source_id": "pinnacle_official_burgers1d_code",
+      "title": "PINNacle official Burgers1D benchmark implementation",
+      "venue": "official_source_code",
+      "year": 2024,
+      "url": "https://github.com/i207M/PINNacle/blob/main/src/pde/burgers.py",
+      "knowledge_topics": ["burgers1d", "source_free_equation", "initial_condition", "dirichlet_boundary", "viscosity"]
+    },
+    {
+      "source_id": "pinnsagent_2025_icml",
+      "title": "PINNsAgent: Automated PDE Surrogation with Large Language Models",
+      "authors": ["Qingpo Wuwu", "Chonghan Gao", "Tianyu Chen", "Yihang Huang", "Yuekai Zhang", "Jianing Wang", "Jianxin Li", "Haoyi Zhou", "Shanghang Zhang"],
+      "venue": "Proceedings of the 42nd International Conference on Machine Learning (PMLR 267)",
+      "year": 2025,
+      "arxiv": "2501.12053",
+      "url": "https://proceedings.mlr.press/v267/wuwu25a.html",
+      "knowledge_topics": ["llm_pinn_agent", "physics_guided_knowledge_replay", "memory_tree_reasoning", "pinnacle_dataset", "burgers1d_mse"]
+    },
+    {
+      "source_id": "raissi_2019_pinn_jcp",
+      "title": "Physics-informed neural networks: A deep learning framework for solving forward and inverse problems involving nonlinear partial differential equations",
+      "authors": ["M. Raissi", "P. Perdikaris", "G. E. Karniadakis"],
+      "venue": "Journal of Computational Physics",
+      "year": 2019,
+      "doi": "10.1016/j.jcp.2018.10.045",
+      "url": "https://doi.org/10.1016/j.jcp.2018.10.045",
+      "knowledge_topics": ["pinn_foundation", "forward_inverse_pde", "residual_loss", "boundary_initial_losses"]
+    },
+    {
+      "source_id": "lagaris_1998_trial_solution",
+      "title": "Artificial neural networks for solving ordinary and partial differential equations",
+      "authors": ["I. E. Lagaris", "A. Likas", "D. I. Fotiadis"],
+      "venue": "IEEE Transactions on Neural Networks",
+      "year": 1998,
+      "doi": "10.1109/72.712178",
+      "url": "https://doi.org/10.1109/72.712178",
+      "knowledge_topics": ["trial_solution", "hard_constraints", "boundary_condition_embedding"]
+    },
+    {
+      "source_id": "yu_2022_gpinn",
+      "title": "Gradient-enhanced physics-informed neural networks for forward and inverse PDE problems",
+      "authors": ["J. Yu", "L. Lu", "X. Meng", "G. E. Karniadakis"],
+      "venue": "Computer Methods in Applied Mechanics and Engineering",
+      "year": 2022,
+      "doi": "10.1016/j.cma.2022.114823",
+      "url": "https://doi.org/10.1016/j.cma.2022.114823",
+      "knowledge_topics": ["gpinn", "gradient_residual", "forward_inverse_pde"]
+    },
+    {
+      "source_id": "lu_2021_deepxde",
+      "title": "DeepXDE: A deep learning library for solving differential equations",
+      "authors": ["L. Lu", "X. Meng", "Z. Mao", "G. E. Karniadakis"],
+      "venue": "SIAM Review",
+      "year": 2021,
+      "doi": "10.1137/19M1274067",
+      "url": "https://doi.org/10.1137/19M1274067",
+      "knowledge_topics": ["deepxde", "pinn_library", "residual_based_adaptive_refinement", "rar"]
+    },
+    {
+      "source_id": "nabian_2021_adaptive_collocation",
+      "title": "Efficient training of physics-informed neural networks via importance sampling",
+      "authors": ["M. A. Nabian", "R. J. Gladstone", "H. Meidani"],
+      "venue": "Computer-Aided Civil and Infrastructure Engineering",
+      "year": 2021,
+      "doi": "10.1111/mice.12685",
+      "url": "https://doi.org/10.1111/mice.12685",
+      "knowledge_topics": ["adaptive_collocation", "importance_sampling", "pinn_training_efficiency"]
+    },
+    {
+      "source_id": "wang_2021_gradient_pathologies",
+      "title": "Understanding and mitigating gradient flow pathologies in physics-informed neural networks",
+      "authors": ["S. Wang", "Y. Teng", "P. Perdikaris"],
+      "venue": "SIAM Journal on Scientific Computing",
+      "year": 2021,
+      "doi": "10.1137/20M1318043",
+      "url": "https://doi.org/10.1137/20M1318043",
+      "knowledge_topics": ["gradient_pathology", "loss_balancing", "learning_rate_annealing"]
+    },
+    {
+      "source_id": "wang_2022_ntk_pinn",
+      "title": "When and why PINNs fail to train: A neural tangent kernel perspective",
+      "authors": ["S. Wang", "X. Yu", "P. Perdikaris"],
+      "venue": "Journal of Computational Physics",
+      "year": 2022,
+      "doi": "10.1016/j.jcp.2021.110768",
+      "url": "https://doi.org/10.1016/j.jcp.2021.110768",
+      "knowledge_topics": ["ntk", "training_failure", "loss_weighting", "spectral_bias"]
+    },
+    {
+      "source_id": "krishnapriyan_2021_pinn_failure_modes",
+      "title": "Characterizing possible failure modes in physics-informed neural networks",
+      "authors": ["A. Krishnapriyan", "A. Gholami", "S. Zhe", "R. M. Kirby", "M. W. Mahoney"],
+      "venue": "NeurIPS",
+      "year": 2021,
+      "arxiv": "2109.01050",
+      "url": "https://arxiv.org/abs/2109.01050",
+      "knowledge_topics": ["pinn_failure_modes", "optimization_difficulty", "curriculum_and_regularization"]
+    },
+    {
+      "source_id": "mcclenny_2020_self_adaptive_pinn",
+      "title": "Self-adaptive physics-informed neural networks using a soft attention mechanism",
+      "authors": ["L. McClenny", "U. Braga-Neto"],
+      "venue": "arXiv",
+      "year": 2020,
+      "arxiv": "2009.04544",
+      "url": "https://arxiv.org/abs/2009.04544",
+      "knowledge_topics": ["self_adaptive_pinn", "soft_attention", "adaptive_loss_weighting"]
+    },
+    {
+      "source_id": "jagtap_2020_cpinn",
+      "title": "Conservative physics-informed neural networks on discrete domains for conservation laws: Applications to forward and inverse problems",
+      "authors": ["A. D. Jagtap", "E. Kharazmi", "G. E. Karniadakis"],
+      "venue": "Computer Methods in Applied Mechanics and Engineering",
+      "year": 2020,
+      "doi": "10.1016/j.cma.2020.113028",
+      "url": "https://doi.org/10.1016/j.cma.2020.113028",
+      "knowledge_topics": ["cpinn", "conservation_laws", "domain_decomposition", "interface_conditions"]
+    },
+    {
+      "source_id": "jagtap_2020_xpinn",
+      "title": "Extended Physics-Informed Neural Networks (XPINNs): A generalized space-time domain decomposition based deep learning framework for nonlinear partial differential equations",
+      "authors": ["A. D. Jagtap", "G. E. Karniadakis"],
+      "venue": "Communications in Computational Physics",
+      "year": 2020,
+      "doi": "10.4208/cicp.oa-2020-0164",
+      "url": "https://doi.org/10.4208/cicp.oa-2020-0164",
+      "knowledge_topics": ["xpinn", "space_time_domain_decomposition", "interface_conditions"]
+    },
+    {
+      "source_id": "tancik_2020_fourier_features",
+      "title": "Fourier features let networks learn high frequency functions in low dimensional domains",
+      "authors": ["M. Tancik", "P. Srinivasan", "B. Mildenhall", "S. Fridovich-Keil", "N. Raghavan", "U. Singhal", "R. Ramamoorthi", "J. Barron", "R. Ng"],
+      "venue": "NeurIPS",
+      "year": 2020,
+      "arxiv": "2006.10739",
+      "url": "https://arxiv.org/abs/2006.10739",
+      "knowledge_topics": ["fourier_features", "spectral_bias", "high_frequency_representation"]
+    },
+    {
+      "source_id": "sitzmann_2020_siren",
+      "title": "Implicit neural representations with periodic activation functions",
+      "authors": ["V. Sitzmann", "J. Martel", "A. Bergman", "D. Lindell", "G. Wetzstein"],
+      "venue": "NeurIPS",
+      "year": 2020,
+      "arxiv": "2006.09661",
+      "url": "https://arxiv.org/abs/2006.09661",
+      "knowledge_topics": ["siren", "periodic_activation", "implicit_neural_representation", "derivatives"]
+    },
+    {
+      "source_id": "yang_2021_bayesian_pinn",
+      "title": "B-PINNs: Bayesian physics-informed neural networks for forward and inverse PDE problems with noisy data",
+      "authors": ["L. Yang", "X. Meng", "G. E. Karniadakis"],
+      "venue": "Journal of Computational Physics",
+      "year": 2021,
+      "doi": "10.1016/j.jcp.2020.109913",
+      "url": "https://doi.org/10.1016/j.jcp.2020.109913",
+      "knowledge_topics": ["bayesian_pinn", "uncertainty_quantification", "noisy_data", "inverse_pde"]
+    },
+    {
+      "source_id": "lu_2021_physics_informed_ml_review",
+      "title": "Physics-informed machine learning",
+      "authors": ["G. E. Karniadakis", "I. G. Kevrekidis", "L. Lu", "P. Perdikaris", "S. Wang", "L. Yang"],
+      "venue": "Nature Reviews Physics",
+      "year": 2021,
+      "doi": "10.1038/s42254-021-00314-5",
+      "url": "https://doi.org/10.1038/s42254-021-00314-5",
+      "knowledge_topics": ["physics_informed_machine_learning_review", "pinn_variants", "scientific_ml_scope"]
+    },
+    {
+      "source_id": "lu_2021_deeponet",
+      "title": "Learning nonlinear operators via DeepONet based on the universal approximation theorem of operators",
+      "authors": ["L. Lu", "P. Jin", "G. Pang", "Z. Zhang", "G. E. Karniadakis"],
+      "venue": "Nature Machine Intelligence",
+      "year": 2021,
+      "doi": "10.1038/s42256-021-00302-5",
+      "url": "https://doi.org/10.1038/s42256-021-00302-5",
+      "knowledge_topics": ["deeponet", "operator_learning", "parametric_pde_family"]
+    },
+    {
+      "source_id": "li_2021_fourier_neural_operator",
+      "title": "Fourier Neural Operator for parametric partial differential equations",
+      "authors": ["Z. Li", "N. Kovachki", "K. Azizzadenesheli", "B. Liu", "K. Bhattacharya", "A. Stuart", "A. Anandkumar"],
+      "venue": "ICLR",
+      "year": 2021,
+      "arxiv": "2010.08895",
+      "url": "https://arxiv.org/abs/2010.08895",
+      "knowledge_topics": ["fourier_neural_operator", "operator_learning", "parametric_pde_family"]
+    },
+    {
+      "source_id": "lu_2021_hpinn",
+      "title": "Physics-Informed Neural Networks with Hard Constraints for Inverse Design",
+      "authors": ["L. Lu", "R. Pestourie", "W. Yao", "Z. Wang", "F. Verdugo", "S. G. Johnson"],
+      "venue": "SIAM Journal on Scientific Computing",
+      "year": 2021,
+      "doi": "10.1137/21M1397908",
+      "url": "https://doi.org/10.1137/21M1397908",
+      "knowledge_topics": ["hard_constraints", "hpinn", "output_transform", "inverse_design"]
+    },
+    {
+      "source_id": "sukumar_2022_exact_bc_distance_functions",
+      "title": "Exact imposition of boundary conditions with distance functions in physics-informed deep neural networks",
+      "authors": ["N. Sukumar", "A. Srivastava"],
+      "venue": "Computer Methods in Applied Mechanics and Engineering",
+      "year": 2022,
+      "doi": "10.1016/j.cma.2021.114333",
+      "url": "https://doi.org/10.1016/j.cma.2021.114333",
+      "knowledge_topics": ["distance_functions", "hard_boundary_conditions", "output_transform", "boundary_exactness"]
+    },
+    {
+      "source_id": "gao_2021_phygeonet",
+      "title": "PhyGeoNet: Physics-informed geometry-adaptive convolutional neural networks for solving parameterized steady-state PDEs on irregular domain",
+      "authors": ["H. Gao", "L. Sun", "J.-X. Wang"],
+      "venue": "Journal of Computational Physics",
+      "year": 2021,
+      "doi": "10.1016/j.jcp.2020.110079",
+      "url": "https://doi.org/10.1016/j.jcp.2020.110079",
+      "knowledge_topics": ["cnn_pinn", "geometry_adaptive_cnn", "grid_pde", "parameterized_pde"]
+    },
+    {
+      "source_id": "yuan_2024_fpicnn",
+      "title": "f-PICNN: A physics-informed convolutional neural network for partial differential equations with space-time domain",
+      "authors": ["B. Yuan", "H. Wang", "A. Heitor", "X. Chen"],
+      "venue": "Journal of Computational Physics",
+      "year": 2024,
+      "doi": "10.1016/j.jcp.2024.113284",
+      "url": "https://doi.org/10.1016/j.jcp.2024.113284",
+      "knowledge_topics": ["cnn_pinn", "fully_convolutional_network", "space_time_domain", "pde_residual"]
+    },
+    {
+      "source_id": "wu_2023_sampling_study",
+      "title": "A comprehensive study of non-adaptive and residual-based adaptive sampling for physics-informed neural networks",
+      "authors": ["C. Wu", "M. Zhu", "Q. Tan", "Y. Kartha", "L. Lu"],
+      "venue": "Computer Methods in Applied Mechanics and Engineering",
+      "year": 2023,
+      "doi": "10.1016/j.cma.2022.115671",
+      "url": "https://doi.org/10.1016/j.cma.2022.115671",
+      "knowledge_topics": ["adaptive_sampling", "residual_based_sampling", "rar", "rad", "pinn_training"]
+    },
+    {
+      "source_id": "wang_2024_causal_pinn",
+      "title": "Respecting causality for training physics-informed neural networks",
+      "authors": ["S. Wang", "S. Sankaran", "P. Perdikaris"],
+      "venue": "Computer Methods in Applied Mechanics and Engineering",
+      "year": 2024,
+      "doi": "10.1016/j.cma.2024.116813",
+      "url": "https://doi.org/10.1016/j.cma.2024.116813",
+      "knowledge_topics": ["causal_training", "time_dependent_pinn", "time_window_curriculum", "training_stability"]
+    },
+    {
+      "source_id": "project_claim_policy",
+      "title": "Forge claim policy",
+      "venue": "local_project_document",
+      "year": 2026,
+      "path": "docs/claim_policy.md",
+      "knowledge_topics": ["claim_boundary", "no_sota_without_evidence", "no_general_superiority_claim"]
+    },
+    {
+      "source_id": "project_adaptive_evolution_policy",
+      "title": "Forge adaptive evolution policy",
+      "venue": "local_project_implementation",
+      "year": 2026,
+      "path": "forge/evolution/adaptive_evolution_policy.py",
+      "knowledge_topics": ["early_exploration_late_refinement", "mutation_crossover_diversity", "runtime_component_reuse"]
+    }
+  ]
+}

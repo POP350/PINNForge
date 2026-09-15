@@ -1,0 +1,307 @@
+[
+  {
+    "rule_id": "pde_core_pinn_requires_residual_and_constraints",
+    "stable_id": "PDE_PINN_CORE_001",
+    "applies_when": {"law_types": ["pde"]},
+    "then": {
+      "required_losses": ["pde_residual"],
+      "required_builder_path": "candidate_runner",
+      "preferred_optimizer": ["adam_lbfgs"]
+    },
+    "reason": "Executable PDE PINN candidates must represent the governing residual and be built through the direct runtime.",
+    "implementation_status": "executable",
+    "evidence_sources": ["raissi_2019_pinn_jcp"]
+  },
+  {
+    "rule_id": "time_dependent_pde_requires_initial_anchor",
+    "stable_id": "PDE_PINN_INITIAL_002",
+    "applies_when": {"law_types": ["pde"], "time_dependent": true},
+    "then": {
+      "required_losses": ["initial_loss"],
+      "preferred_constraints": ["initial_anchor"],
+      "preferred_sampling": ["boundary_initial_oversampling"]
+    },
+    "reason": "Time-dependent PDEs need explicit initial-condition enforcement or an equivalent trusted output transform.",
+    "implementation_status": "executable",
+    "evidence_sources": ["raissi_2019_pinn_jcp", "lagaris_1998_trial_solution"]
+  },
+  {
+    "rule_id": "boundary_value_pde_requires_boundary_anchor",
+    "stable_id": "PDE_PINN_BOUNDARY_003",
+    "applies_when": {"law_types": ["pde"], "boundary_type_not_empty": true},
+    "then": {
+      "required_losses": ["boundary_loss"],
+      "preferred_constraints": ["boundary_anchor"],
+      "preferred_sampling": ["boundary_initial_oversampling"]
+    },
+    "reason": "Boundary value PDEs need explicit boundary-condition supervision or a hard/semi-hard transform.",
+    "implementation_status": "executable",
+    "evidence_sources": ["raissi_2019_pinn_jcp", "lagaris_1998_trial_solution"]
+  },
+  {
+    "rule_id": "burgers_shock_prefers_gpinn_rar_and_transform",
+    "stable_id": "PDE_PINN_BURGERS_SHOCK_004",
+    "applies_when": {"law_types": ["pde"], "has_shock": true},
+    "then": {
+      "preferred_losses": ["gradient_residual"],
+      "preferred_sampling": ["rar", "rar_with_bc_ic_anchor"],
+      "preferred_constraints": ["initial_boundary_blend_output_transform"],
+      "preferred_schedule": ["constraint_pretrain_then_physics"]
+    },
+    "reason": "Shock-like Burgers regimes benefit from residual-gradient information, residual adaptive refinement, and strong IC/BC handling.",
+    "implementation_status": "executable",
+    "evidence_sources": ["yu_2022_gpinn", "lu_2021_deepxde", "lagaris_1998_trial_solution"]
+  },
+  {
+    "rule_id": "conservation_pde_prefers_conservation_penalty_when_supported",
+    "stable_id": "PDE_PINN_CONSERVATION_005",
+    "applies_when": {"law_types": ["pde"], "has_conservation_law": true},
+    "then": {
+      "preferred_losses": ["conservation_loss"],
+      "preferred_constraints": ["conservation_constraint"],
+      "preferred_diagnostics": ["mass_or_flux_error"]
+    },
+    "reason": "Conservation-law PDEs can benefit from explicit conservation penalties when the benchmark exposes a compatible residual.",
+    "implementation_status": "executable_when_loss_supported",
+    "evidence_sources": ["jagtap_2020_cpinn", "lu_2021_physics_informed_ml_review"]
+  },
+  {
+    "rule_id": "multiscale_pde_prefers_fourier_features",
+    "stable_id": "PDE_PINN_MULTISCALE_006",
+    "applies_when": {"law_types": ["pde"], "has_multiscale": true},
+    "then": {
+      "preferred_network": ["fourier_mlp"],
+      "preferred_initialization": ["xavier"],
+      "candidate_networks": ["siren"]
+    },
+    "reason": "Fourier features and sinusoidal representations can mitigate spectral bias for multi-scale PDE solutions; SIREN remains a candidate component until safely registered.",
+    "implementation_status": "mixed_executable_and_candidate",
+    "evidence_sources": ["tancik_2020_fourier_features", "sitzmann_2020_siren", "wang_2022_ntk_pinn"]
+  },
+  {
+    "rule_id": "stable_pde_training_prefers_constraint_warmup",
+    "stable_id": "PDE_PINN_TRAINING_007",
+    "applies_when": {"law_types": ["pde"]},
+    "then": {
+      "preferred_schedule": ["constraint_pretrain_then_physics", "adaptive_loss_weighting"],
+      "preferred_optimizer": ["adam_lbfgs"],
+      "preferred_diagnostics": ["pde_loss", "boundary_loss", "initial_loss", "gradient_norms"]
+    },
+    "reason": "PINN optimization is sensitive to loss imbalance; constraint warmup and Adam-to-LBFGS schedules are common stabilizers.",
+    "implementation_status": "executable_for_existing_schedule_components",
+    "evidence_sources": ["wang_2021_gradient_pathologies", "wang_2022_ntk_pinn"]
+  },
+  {
+    "rule_id": "llm_candidates_must_remain_structured_specs",
+    "stable_id": "PDE_PINN_LLM_SAFETY_008",
+    "applies_when": {"law_types": ["pde"]},
+    "then": {
+      "allowed_llm_outputs": ["AlgorithmSpec", "AlgorithmSpec"],
+      "forbidden_outputs": ["raw_python_training_code"],
+      "required_validation": ["dsl_validator", "algorithm_spec_validation"]
+    },
+    "reason": "LLM proposals are knowledge-guided data objects, not executable arbitrary code.",
+    "implementation_status": "executable_safety_boundary",
+    "evidence_sources": ["project_claim_policy"]
+  },
+  {
+    "rule_id": "hard_constraints_reduce_ic_bc_search_burden",
+    "stable_id": "PDE_PINN_HARD_CONSTRAINT_009",
+    "applies_when": {"law_types": ["pde"], "time_dependent": true, "boundary_type_not_empty": true},
+    "then": {
+      "preferred_constraints": ["initial_boundary_output_transform"],
+      "preferred_schedule": ["constraint_pretrain_then_physics"],
+      "required_checks": ["ic_bc_exact_or_semihard_satisfaction", "transform_problem_compatibility"]
+    },
+    "reason": "Embedding IC/BC constraints in the trial solution can shrink the optimization burden, but the transform must be problem-specific and trusted.",
+    "implementation_status": "executable_when_transform_component_is_supported",
+    "evidence_sources": ["lagaris_1998_trial_solution", "raissi_2019_pinn_jcp"]
+  },
+  {
+    "rule_id": "gpinn_is_preferred_for_steep_derivative_residuals",
+    "stable_id": "PDE_PINN_GPINN_010",
+    "applies_when": {"law_types": ["pde"], "has_shock": true},
+    "then": {
+      "preferred_losses": ["gradient_residual"],
+      "preferred_loss_weighting": ["small_gradient_residual_weight_initially", "adaptive_weighting_optional"],
+      "preferred_diagnostics": ["gradient_residual_error"]
+    },
+    "reason": "Gradient-enhanced residual terms expose derivative errors that are important in steep-gradient PDE regimes.",
+    "implementation_status": "executable",
+    "evidence_sources": ["yu_2022_gpinn"]
+  },
+  {
+    "rule_id": "rar_prefers_error_exploration_balance",
+    "stable_id": "PDE_PINN_RAR_BALANCE_011",
+    "applies_when": {"law_types": ["pde"], "has_shock": true},
+    "then": {
+      "preferred_sampling": ["rar", "uniform_refresh", "boundary_initial_anchor_points"],
+      "preferred_indicators": ["absolute_residual", "gradient_residual"],
+      "avoid": ["rar_without_uniform_refresh", "rar_without_ic_bc_anchor"]
+    },
+    "reason": "RAR should add points where the residual is large while preserving exploration and constraint anchors.",
+    "implementation_status": "executable",
+    "evidence_sources": ["lu_2021_deepxde", "nabian_2021_adaptive_collocation"]
+  },
+  {
+    "rule_id": "gradient_pathology_requires_loss_and_gradient_diagnostics",
+    "stable_id": "PDE_PINN_GRADIENT_PATHOLOGY_012",
+    "applies_when": {"law_types": ["pde"]},
+    "then": {
+      "preferred_diagnostics": ["loss_term_history", "gradient_norm_history", "nan_guardrail"],
+      "preferred_mitigations": ["adaptive_loss_weighting", "learning_rate_annealing", "constraint_warmup"],
+      "claim_boundary": ["diagnostic_support_required_before_performance_claim"]
+    },
+    "reason": "Uneven gradient flow across PINN loss terms is a known source of unstable or failed training.",
+    "implementation_status": "executable_for_diagnostics_and_existing_mitigations",
+    "evidence_sources": ["wang_2021_gradient_pathologies", "krishnapriyan_2021_pinn_failure_modes"]
+  },
+  {
+    "rule_id": "failed_or_flat_training_prefers_budgeted_restart_and_diversity",
+    "stable_id": "PDE_PINN_SEARCH_DIVERSITY_013",
+    "applies_when": {"law_types": ["pde"]},
+    "then": {
+      "preferred_search_actions": ["random_mutation", "random_crossover", "elite_crossover", "knowledge_guided_mutation"],
+      "preferred_schedule": ["early_exploration_late_refinement"],
+      "avoid": ["single_template_closed_search"]
+    },
+    "reason": "Open-ended PINN search should preserve executable-core variation and diversity to reduce local-optimum lock-in.",
+    "implementation_status": "executable_in_adaptive_evolution_policy",
+    "evidence_sources": ["project_adaptive_evolution_policy", "krishnapriyan_2021_pinn_failure_modes"]
+  },
+  {
+    "rule_id": "domain_decomposition_is_candidate_for_large_or_multiscale_pde",
+    "stable_id": "PDE_PINN_DOMAIN_DECOMP_014",
+    "applies_when": {"law_types": ["pde"], "has_multiscale": true},
+    "then": {
+      "candidate_methods": ["cPINN", "XPINN"],
+      "required_builder_extensions": ["subdomain_networks", "interface_losses"],
+      "execution_boundary": ["llm_candidate_until_tests_and_builder_support"]
+    },
+    "reason": "Domain decomposition PINNs are useful literature priors for large or heterogeneous PDEs, but they require explicit safe builder support before execution.",
+    "implementation_status": "llm_candidate",
+    "evidence_sources": ["jagtap_2020_cpinn", "jagtap_2020_xpinn"]
+  },
+  {
+    "rule_id": "operator_learning_is_not_single_instance_pinn_default",
+    "stable_id": "PDE_PINN_OPERATOR_LEARNING_015",
+    "applies_when": {"law_types": ["pde"], "data_available": true},
+    "then": {
+      "candidate_methods": ["DeepONet", "FNO"],
+      "required_data": ["multi_parameter_solution_dataset"],
+      "execution_boundary": ["audit_only_or_llm_candidate"]
+    },
+    "reason": "Operator learners are valuable for families of PDE solves, but they are not a drop-in replacement for the current single-instance Burgers PINN benchmark.",
+    "implementation_status": "audit_only",
+    "evidence_sources": ["lu_2021_deeponet", "li_2021_fourier_neural_operator"]
+  },
+  {
+    "rule_id": "no_sota_or_general_superiority_from_prior_knowledge",
+    "stable_id": "PDE_PINN_CLAIM_BOUNDARY_016",
+    "applies_when": {"law_types": ["pde"]},
+    "then": {
+      "forbidden_claims": ["sota", "state_of_the_art", "general_pinn_superiority", "all_pde_superiority"],
+      "allowed_claims": ["prior_knowledge_expanded", "structured_guidance_available", "candidate_requires_validation"]
+    },
+    "reason": "Literature priors guide proposal generation; they do not establish performance claims for this project without matched experiments.",
+    "implementation_status": "claim_policy",
+    "evidence_sources": ["project_claim_policy"]
+  },
+  {
+    "rule_id": "burgers_viscous_shock_needs_constraint_sampling_loss_combo",
+    "stable_id": "PDE_PINN_BURGERS_COMBO_017",
+    "applies_when": {"law_types": ["pde"], "has_shock": true, "has_conservation_law": true},
+    "then": {
+      "preferred_constraints": ["initial_boundary_blend_output_transform"],
+      "preferred_losses": ["pde_residual", "gradient_residual"],
+      "preferred_sampling": ["mixed_uniform_residual_sampling", "rar_with_bc_ic_anchor"],
+      "preferred_optimizer": ["adam_lbfgs"],
+      "preferred_diagnostics": ["relative_l2_error", "pde_residual_error", "boundary_error", "initial_error", "nan_guardrail"]
+    },
+    "reason": "Burgers combines nonlinear convection, viscosity, and steep gradients; stable candidates should combine constraint handling, shock-aware sampling, and derivative diagnostics rather than changing only one component.",
+    "implementation_status": "executable_for_existing_components",
+    "evidence_sources": ["raissi_2019_pinn_jcp", "yu_2022_gpinn", "wu_2023_sampling_study", "wang_2021_gradient_pathologies"]
+  },
+  {
+    "rule_id": "burgers_output_transform_recipe",
+    "stable_id": "PDE_PINN_BURGERS_TRANSFORM_018",
+    "applies_when": {"law_types": ["pde"], "has_shock": true, "time_dependent": true, "boundary_type_not_empty": true},
+    "then": {
+      "preferred_transform": ["initial_boundary_blend_output_transform"],
+      "candidate_transform_extensions": ["distance_function_boundary_factor", "hard_ic_soft_bc_transform", "semi_hard_ic_bc_transform"],
+      "required_checks": ["u_at_t0_matches_initial_condition", "u_at_boundary_matches_boundary_condition_or_low_error", "autodiff_residual_uses_transformed_output"],
+      "avoid": ["unvalidated_symbolic_transform_from_llm"]
+    },
+    "reason": "For Burgers, the transform should remove IC/BC burden while preserving an accurate residual for the nonlinear convection-diffusion equation.",
+    "implementation_status": "executable_when_existing_burgers_transform_components_are_used",
+    "evidence_sources": ["lagaris_1998_trial_solution", "lu_2021_hpinn", "sukumar_2022_exact_bc_distance_functions"]
+  },
+  {
+    "rule_id": "burgers_sampling_recipe_rar_rad_anchor",
+    "stable_id": "PDE_PINN_BURGERS_SAMPLING_019",
+    "applies_when": {"law_types": ["pde"], "has_shock": true},
+    "then": {
+      "preferred_sampling": ["rar", "residual_based_adaptive_refinement", "mixed_uniform_residual_sampling"],
+      "required_sampling": ["uniform_refresh", "boundary_initial_anchor_points"],
+      "candidate_indicators": ["absolute_residual", "gradient_residual", "solution_gradient_magnitude"],
+      "avoid": ["residual_only_sampling_without_ic_bc_anchor", "single_static_collocation_set_for_shock_search"]
+    },
+    "reason": "Adaptive sampling is useful for localized Burgers residual errors, but anchors and exploration prevent overfitting one residual hotspot.",
+    "implementation_status": "executable_for_existing_rar_components_with_uniform_refresh",
+    "evidence_sources": ["lu_2021_deepxde", "nabian_2021_adaptive_collocation", "wu_2023_sampling_study"]
+  },
+  {
+    "rule_id": "burgers_gpinn_weighting_recipe",
+    "stable_id": "PDE_PINN_BURGERS_GPINN_WEIGHT_020",
+    "applies_when": {"law_types": ["pde"], "has_shock": true},
+    "then": {
+      "preferred_losses": ["gradient_residual"],
+      "initial_weight_hint": {"gradient_residual": 0.05},
+      "search_weight_range_hint": {"gradient_residual": [0.01, 0.2]},
+      "required_diagnostics": ["gradient_residual_error", "pde_residual_error", "loss_term_history"]
+    },
+    "reason": "Gradient residual can help with Burgers shock derivatives, but should be searched with conservative weights and diagnostics.",
+    "implementation_status": "executable",
+    "evidence_sources": ["yu_2022_gpinn", "wang_2021_gradient_pathologies"]
+  },
+  {
+    "rule_id": "burgers_causal_schedule_candidate",
+    "stable_id": "PDE_PINN_BURGERS_CAUSAL_021",
+    "applies_when": {"law_types": ["pde"], "has_shock": true, "time_dependent": true},
+    "then": {
+      "candidate_schedule": ["causal_time_weighting", "time_window_curriculum", "progressive_time_domain_training"],
+      "fallback_schedule": ["constraint_pretrain_then_physics"],
+      "required_tests": ["time_slice_error_audit", "no_late_time_only_overfit", "same_budget_comparison_before_claim"]
+    },
+    "reason": "Causal time weighting is a literature-supported training idea for time-dependent PINNs, but it is a candidate extension until implemented and tested in this builder.",
+    "implementation_status": "llm_candidate",
+    "evidence_sources": ["wang_2024_causal_pinn", "krishnapriyan_2021_pinn_failure_modes"]
+  },
+  {
+    "rule_id": "burgers_cnn_pinn_candidate_requires_grid_formulation",
+    "stable_id": "PDE_PINN_BURGERS_CNN_022",
+    "applies_when": {"law_types": ["pde"], "has_shock": true, "time_dependent": true},
+    "then": {
+      "candidate_networks": ["fPICNN_SpaceTime_PINN", "CNN_PINN_Grid_Prior"],
+      "required_builder_extensions": ["space_time_grid_sampler", "cnn_network_component", "grid_residual_adapter", "boundary_mask_policy"],
+      "fallback_executable_networks": ["mlp", "fourier_mlp"],
+      "execution_boundary": ["llm_candidate_until_safety_and_builder_tests_pass"]
+    },
+    "reason": "CNN-PINN methods can be relevant for Burgers represented as a space-time grid, but the current coordinate PINN builder must not execute CNN proposals without registered components.",
+    "implementation_status": "llm_candidate",
+    "evidence_sources": ["yuan_2024_fpicnn", "gao_2021_phygeonet"]
+  },
+  {
+    "rule_id": "transform_and_cnn_claim_boundary",
+    "stable_id": "PDE_PINN_TRANSFORM_CNN_CLAIM_023",
+    "applies_when": {"law_types": ["pde"]},
+    "then": {
+      "allowed_claims": ["transform_or_cnn_prior_available", "candidate_requires_builder_validation", "cnn_component_recorded_not_executed"],
+      "forbidden_claims": ["cnn_pinn_superiority", "transform_guarantees_accuracy", "general_burgers_superiority_without_multiseed_training"],
+      "required_evidence_before_claim": ["same_budget_training", "seed_stability", "no_scaffold_metrics"]
+    },
+    "reason": "Adding transform and CNN priors expands the search vocabulary but does not prove performance superiority without matched real training.",
+    "implementation_status": "claim_policy",
+    "evidence_sources": ["project_claim_policy"]
+  }
+]

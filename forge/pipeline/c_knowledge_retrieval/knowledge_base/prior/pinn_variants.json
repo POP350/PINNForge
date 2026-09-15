@@ -1,0 +1,225 @@
+[
+  {
+    "name": "PINN",
+    "category": "baseline",
+    "recommended_for": ["smooth_pde", "forward_problem", "inverse_problem"],
+    "required_components": {
+      "network": ["mlp"],
+      "loss": ["pde_residual", "boundary_loss"],
+      "sampling": ["uniform", "latin_hypercube"],
+      "optimizer": ["adam", "adam_lbfgs"]
+    },
+    "limitations": ["loss_imbalance", "spectral_bias", "training_instability"],
+    "implementation_status": "executable",
+    "evidence_sources": ["raissi_2019_pinn_jcp", "lu_2021_physics_informed_ml_review"]
+  },
+  {
+    "name": "Hard_Constraint_PINN",
+    "category": "constraint_enhanced",
+    "recommended_for": ["smooth_pde", "forward_problem", "initial_boundary_constraints"],
+    "required_components": {
+      "constraints": ["output_transform", "initial_anchor", "boundary_anchor"],
+      "loss": ["pde_residual"],
+      "schedule": ["constraint_pretrain_then_physics"]
+    },
+    "limitations": ["problem_specific_transform_required", "incorrect_ansatz_can_bias_solution"],
+    "implementation_status": "executable_when_builder_supports_transform",
+    "evidence_sources": ["lagaris_1998_trial_solution", "raissi_2019_pinn_jcp"]
+  },
+  {
+    "name": "gPINN",
+    "category": "loss_enhanced",
+    "recommended_for": ["steep_gradient", "shock", "sparse_observation"],
+    "required_components": {
+      "loss": ["pde_residual", "gradient_residual"]
+    },
+    "limitations": ["higher_autodiff_cost", "can_amplify_noise_or_stiffness"],
+    "implementation_status": "executable",
+    "evidence_sources": ["yu_2022_gpinn"]
+  },
+  {
+    "name": "RAR-PINN",
+    "category": "sampling_enhanced",
+    "recommended_for": ["localized_error", "shock", "boundary_layer"],
+    "required_components": {
+      "sampling": ["rar", "residual_indicator"]
+    },
+    "limitations": ["extra_residual_evaluation_cost", "must_keep_ic_bc_anchor_points"],
+    "implementation_status": "executable",
+    "evidence_sources": ["lu_2021_deepxde", "nabian_2021_adaptive_collocation"]
+  },
+  {
+    "name": "Fourier_PINN",
+    "category": "architecture_enhanced",
+    "recommended_for": ["high_frequency", "multiscale"],
+    "required_components": {
+      "network": ["fourier_mlp"]
+    },
+    "limitations": ["sensitive_to_frequency_scale", "may_overfit_with_large_scales"],
+    "implementation_status": "executable_if_fourier_mlp_enabled",
+    "evidence_sources": ["tancik_2020_fourier_features"]
+  },
+  {
+    "name": "Self_Adaptive_PINN",
+    "category": "loss_enhanced",
+    "recommended_for": ["loss_imbalance", "stiff_training", "sparse_observation"],
+    "required_components": {
+      "loss": ["adaptive_loss_weighting"],
+      "schedule": ["weight_update_during_training"]
+    },
+    "limitations": ["extra_hyperparameters", "weight_collapse_requires_monitoring"],
+    "implementation_status": "compiled_to_existing_components_when_adaptive_loss_weighting_available",
+    "evidence_sources": ["mcclenny_2020_self_adaptive_pinn"]
+  },
+  {
+    "name": "Gradient_Balanced_PINN",
+    "category": "optimization_enhanced",
+    "recommended_for": ["loss_imbalance", "stiff_training", "boundary_layer"],
+    "required_components": {
+      "loss": ["adaptive_loss_weighting", "gradient_norm_balancing"],
+      "optimizer": ["adam", "adam_lbfgs"]
+    },
+    "limitations": ["requires_gradient_statistics", "may_add_training_overhead"],
+    "implementation_status": "audit_or_candidate_until_gradient_balancer_is_registered",
+    "evidence_sources": ["wang_2021_gradient_pathologies", "wang_2022_ntk_pinn"]
+  },
+  {
+    "name": "cPINN",
+    "category": "domain_decomposition_conservation",
+    "recommended_for": ["conservation_law", "discontinuous_solution", "large_domain"],
+    "required_components": {
+      "physics": ["conservation_flux_continuity"],
+      "constraints": ["interface_conditions"],
+      "domain": ["subdomain_decomposition"]
+    },
+    "limitations": ["domain_decomposition_not_core_builder_default", "interface_loss_tuning_required"],
+    "implementation_status": "composite_only",
+    "evidence_sources": ["jagtap_2020_cpinn"]
+  },
+  {
+    "name": "XPINN",
+    "category": "domain_decomposition",
+    "recommended_for": ["multiscale", "large_domain", "heterogeneous_dynamics"],
+    "required_components": {
+      "domain": ["space_time_decomposition"],
+      "constraints": ["interface_continuity"],
+      "network": ["subnetwork_per_subdomain"]
+    },
+    "limitations": ["not_executable_without_domain_decomposition_builder", "interface_design_required"],
+    "implementation_status": "llm_candidate",
+    "evidence_sources": ["jagtap_2020_xpinn"]
+  },
+  {
+    "name": "SIREN_PINN",
+    "category": "architecture_enhanced",
+    "recommended_for": ["high_frequency", "smooth_derivative_signal"],
+    "required_components": {
+      "network": ["siren"],
+      "initialization": ["sine_specific_initialization"]
+    },
+    "limitations": ["not_default_builder_component", "sensitive_initialization"],
+    "implementation_status": "llm_candidate",
+    "evidence_sources": ["sitzmann_2020_siren"]
+  },
+  {
+    "name": "Bayesian_PINN",
+    "category": "uncertainty_enhanced",
+    "recommended_for": ["inverse_problem", "noisy_data", "uncertainty_quantification"],
+    "required_components": {
+      "inference": ["posterior_sampling_or_variational_inference"],
+      "loss": ["data_likelihood", "pde_residual"]
+    },
+    "limitations": ["higher_compute_cost", "not_a_plain_deterministic_pinn_builder_path"],
+    "implementation_status": "audit_only",
+    "evidence_sources": ["yang_2021_bayesian_pinn"]
+  },
+  {
+    "name": "Operator_Learning_Prior",
+    "category": "operator_learning",
+    "recommended_for": ["many_query_solution_operator", "parametric_pde_family"],
+    "required_components": {
+      "network": ["deeponet", "fno"],
+      "data": ["multi_instance_operator_dataset"]
+    },
+    "limitations": ["requires_operator_dataset", "not_single_instance_pinn_baseline"],
+    "implementation_status": "audit_only",
+    "evidence_sources": ["lu_2021_deeponet", "li_2021_fourier_neural_operator"]
+  },
+  {
+    "name": "Burgers_Shock_Transform_PINN",
+    "category": "burgers_specialized_constraint_enhanced",
+    "recommended_for": ["shock", "steep_gradient", "initial_boundary_constraints", "conservation_law"],
+    "required_components": {
+      "constraints": ["initial_boundary_blend_output_transform", "initial_anchor", "boundary_anchor"],
+      "loss": ["pde_residual", "gradient_residual"],
+      "sampling": ["mixed_uniform_residual_sampling", "rar_with_bc_ic_anchor"],
+      "optimizer": ["adam_lbfgs"]
+    },
+    "limitations": ["transform_must_match_burgers_ic_bc", "low_viscosity_shocks_need_sampling_refresh", "single_seed_result_not_stability_evidence"],
+    "implementation_status": "executable_when_existing_burgers_transform_components_are_used",
+    "evidence_sources": ["raissi_2019_pinn_jcp", "yu_2022_gpinn", "wu_2023_sampling_study", "lu_2021_hpinn"]
+  },
+  {
+    "name": "Distance_Function_Hard_BC_PINN",
+    "category": "constraint_enhanced",
+    "recommended_for": ["boundary_constraints", "smooth_pde", "geometry_aware_constraints"],
+    "required_components": {
+      "constraints": ["distance_function_boundary_factor", "boundary_output_transform"],
+      "checks": ["distance_function_validity", "boundary_exactness_test"]
+    },
+    "limitations": ["requires_geometry_or_boundary_distance_function", "not_automatic_for_every_pde", "may_be_candidate_only_for_current_builder"],
+    "implementation_status": "llm_candidate",
+    "evidence_sources": ["sukumar_2022_exact_bc_distance_functions", "lu_2021_hpinn"]
+  },
+  {
+    "name": "Causal_Time_PINN",
+    "category": "training_schedule_enhanced",
+    "recommended_for": ["time_dependent", "stiff_training", "long_time_dynamics", "shock"],
+    "required_components": {
+      "schedule": ["causal_time_weighting", "time_window_curriculum"],
+      "diagnostics": ["time_slice_residual_history", "early_time_constraint_error"]
+    },
+    "limitations": ["requires_time_partition_or_causal_weights", "not_a_default_builder_component"],
+    "implementation_status": "llm_candidate",
+    "evidence_sources": ["wang_2024_causal_pinn"]
+  },
+  {
+    "name": "CNN_PINN_Grid_Prior",
+    "category": "architecture_enhanced",
+    "recommended_for": ["structured_grid_field", "spatiotemporal_field", "many_query_solution_operator", "image_like_pde_state"],
+    "required_components": {
+      "network": ["cnn_encoder_decoder", "convolutional_stencil_features"],
+      "data": ["structured_grid_or_space_time_tensor"],
+      "physics": ["finite_difference_or_autodiff_residual_adapter"]
+    },
+    "limitations": ["current_burgers_builder_does_not_execute_cnn", "requires_grid_tensor_representation", "must_not_replace_coordinate_pinn_without_adapter"],
+    "implementation_status": "llm_candidate",
+    "evidence_sources": ["gao_2021_phygeonet", "yuan_2024_fpicnn"]
+  },
+  {
+    "name": "PhyGeoNet_CNN_PINN",
+    "category": "architecture_enhanced_geometry_aware",
+    "recommended_for": ["parameterized_pde", "irregular_domain", "structured_grid_field"],
+    "required_components": {
+      "network": ["geometry_adaptive_cnn"],
+      "geometry": ["coordinate_mapping_or_grid_transform"],
+      "physics": ["pde_residual_on_transformed_grid"]
+    },
+    "limitations": ["designed_for_grid_and_geometry_mapping", "not_directly_executable_in_current_single_burgers_core"],
+    "implementation_status": "audit_only",
+    "evidence_sources": ["gao_2021_phygeonet"]
+  },
+  {
+    "name": "fPICNN_SpaceTime_PINN",
+    "category": "architecture_enhanced_spacetime_cnn",
+    "recommended_for": ["spatiotemporal_field", "time_dependent", "structured_grid_field"],
+    "required_components": {
+      "network": ["fully_convolutional_spacetime_network"],
+      "physics": ["space_time_pde_residual"],
+      "data": ["space_time_grid"]
+    },
+    "limitations": ["needs_space_time_grid_formulation", "candidate_only_until_safe_cnn_builder_exists"],
+    "implementation_status": "llm_candidate",
+    "evidence_sources": ["yuan_2024_fpicnn"]
+  }
+]
