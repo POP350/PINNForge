@@ -6,7 +6,19 @@ import argparse
 import json
 import os
 from pathlib import Path
+import sys
+import types
 from typing import Any
+
+PINNACLE_ROOT = Path(__file__).resolve().parents[1] / "third_party" / "pinnacle"
+if str(PINNACLE_ROOT) not in sys.path:
+    sys.path.insert(0, str(PINNACLE_ROOT))
+PINNACLE_UTILS_ROOT = PINNACLE_ROOT / "utils"
+if "utils" not in sys.modules:
+    pinnacle_utils = types.ModuleType("utils")
+    pinnacle_utils.__path__ = [str(PINNACLE_UTILS_ROOT)]
+    pinnacle_utils.__package__ = "utils"
+    sys.modules["utils"] = pinnacle_utils
 
 from forge.experiments.closed_loop import run_closed_loop
 from forge.pipeline.a_problem_definition.problems.registry import (
@@ -62,13 +74,15 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Run any registered problem through the common Open AlgorithmSpec search."
     )
-    parser.add_argument("--problem", required=True, choices=list_problems())
+    parser.add_argument("--problem", default="burgers_1d", choices=list_problems())
     parser.add_argument(
         "--experiment-config",
         type=Path,
         help="Optional experiment JSON.",
     )
-    parser.add_argument("--output-dir", type=Path, default=None)
+    parser.add_argument(
+        "--output-dir", type=Path, default=Path("outputs/debug_burgers_1d")
+    )
     parser.add_argument("--seed", type=int, default=None)
     parser.add_argument("--independent-run-id", default=None)
     parser.add_argument(
@@ -115,7 +129,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=None,
         help="Maximum concurrent remote LLM design requests; GPU training remains serial.",
     )
-    parser.add_argument("--llm-timeout-seconds", type=_parse_positive_integer, default=None)
+    parser.add_argument("--llm-timeout-seconds", type=_parse_positive_integer, default=120)
     parser.add_argument(
         "--posterior-context-max-tokens", type=_parse_positive_integer, default=None
     )
