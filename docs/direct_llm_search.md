@@ -1,6 +1,6 @@
 # Closed-loop search
 
-PINNsForge uses an LLM to generate a complete `AlgorithmSpec`, rather than Python code or a partial patch to a fixed template. Before training, each specification undergoes field-level option validation, problem-capability checks, sampling-budget checks, and normalization.
+PINNForge uses an LLM to generate a complete `AlgorithmSpec`, rather than Python code or a partial patch to a fixed template. Before training, each specification undergoes field-level option validation, problem-capability checks, sampling-budget checks, and normalization.
 
 ## Main workflow
 

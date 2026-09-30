@@ -1,8 +1,8 @@
-# PINNsForge
+# PINNForge
 
 The Python package is named `forge`. The 26 currently registered PDEs, their sampling rules, and evaluation sizes are documented in the [PDE problem overview](docs/pde_problems.md). The unified entry point is `python -m forge.run --problem <id>`.
 
-PINNsForge uses an LLM to generate complete `AlgorithmSpec` objects, validates their credibility, builds and trains PyTorch PINNs, evaluates them numerically, and closes the loop through population updates and experimental knowledge feedback.
+PINNForge uses an LLM to generate complete `AlgorithmSpec` objects, validates their credibility, builds and trains PyTorch PINNs, evaluates them numerically, and closes the loop through population updates and experimental knowledge feedback.
 
 Built-in problems are provided directly by `third_party/pinnacle`. External generalization problems use the same open registry. The project no longer maintains duplicate handwritten PINNacle PDEs, legacy benchmarks, or legacy adapters; additional sources can be integrated through `register_problem()`.
 
@@ -79,4 +79,4 @@ See [Closed-loop search](docs/direct_llm_search.md) and the [PDE problem overvie
 
 ## License
 
-PINNsForge is licensed under the [Apache License 2.0](LICENSE). The vendored PINNacle subset under `third_party/pinnacle` retains its upstream MIT License; see `third_party/pinnacle/LICENSE`.
+PINNForge is licensed under the [Apache License 2.0](LICENSE). The vendored PINNacle subset under `third_party/pinnacle` retains its upstream MIT License; see `third_party/pinnacle/LICENSE`.

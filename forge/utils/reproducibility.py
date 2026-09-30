@@ -25,7 +25,7 @@ def set_global_seed(seed: int) -> None:
     """Seed all RNGs and select deterministic or throughput-oriented kernels.
 
     Deterministic execution remains the default.  Long server sweeps may set
-    ``PINNSFORGE_PERFORMANCE_MODE=1`` to allow faster CUDA kernels and TF32
+    ``PINNFORGE_PERFORMANCE_MODE=1`` to allow faster CUDA kernels and TF32
     matrix multiplications while retaining seeded RNG streams.
     """
     os.environ["PYTHONHASHSEED"] = str(seed)
@@ -37,7 +37,7 @@ def set_global_seed(seed: int) -> None:
         torch.cuda.manual_seed_all(seed)
 
     performance_mode = os.environ.get(
-        "PINNSFORGE_PERFORMANCE_MODE", ""
+        "PINNFORGE_PERFORMANCE_MODE", ""
     ).strip().lower() in {"1", "true", "yes", "on"}
     if performance_mode:
         torch.backends.cudnn.deterministic = False

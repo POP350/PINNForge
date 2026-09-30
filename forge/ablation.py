@@ -1,4 +1,4 @@
-"""Auditable paper-aligned ablation modes for PINNsForge experiments."""
+"""Auditable paper-aligned ablation modes for PINNForge experiments."""
 
 from __future__ import annotations
 
