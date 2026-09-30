@@ -1,6 +1,6 @@
 # PINNForge
 
-The Python package is named `forge`. The 26 currently registered PDEs, their sampling rules, and evaluation sizes are documented in the [PDE problem overview](docs/pde_problems.md). The unified entry point is `python -m forge.run --problem <id>`.
+The Python package is named `forge`. The unified entry point is `python -m forge.run --problem <id>`.
 
 PINNForge uses an LLM to generate complete `AlgorithmSpec` objects, validates their credibility, builds and trains PyTorch PINNs, evaluates them numerically, and closes the loop through population updates and experimental knowledge feedback.
 
@@ -26,7 +26,6 @@ forge/
 └─ utils/                          # Shared utilities
 
 third_party/pinnacle/              # Minimal PINNacle runtime, compatibility layer, and reference data
-docs/                              # Usage documentation
 ```
 
 Historical training output is not committed. Every run writes its artifacts to `outputs/`, which is excluded by `.gitignore`.
@@ -75,8 +74,8 @@ python -m forge.experiments.run_search --dry-run --benchmark burgers_1d
 
 Candidates always undergo normalization and executability validation. Low-fidelity search and final review use independently constructed models and do not reuse parent weights. Output is written to `outputs/` by default and is not committed to Git. Use `--output-detail compact` to retain search summaries and recovery state, or `--output-detail diagnostic` to retain complete diagnostic artifacts.
 
-See [Closed-loop search](docs/direct_llm_search.md) and the [PDE problem overview](docs/pde_problems.md) for more information.
-
 ## License
+
+Copyright 2026 PINNForge contributors.
 
 PINNForge is licensed under the [Apache License 2.0](LICENSE). The vendored PINNacle subset under `third_party/pinnacle` retains its upstream MIT License; see `third_party/pinnacle/LICENSE`.
